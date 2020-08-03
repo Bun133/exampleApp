@@ -1,6 +1,7 @@
 package com.ndsl.sddh.image;
 
 import com.ndsl.graphics.display.drawable.img.GImage;
+import com.ndsl.sddh.movie.MovieDataTransfer;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.opencv.opencv_core.Mat;
 
@@ -13,6 +14,14 @@ import static com.ndsl.sddh.movie.MovieDataTransfer.getAsFrame;
 import static com.ndsl.sddh.movie.MovieDataTransfer.getAsMat;
 
 public class AdvGImage {
+    public AdvGImage(String path){
+        this(MovieDataTransfer.getAsMat(path));
+    }
+
+    public AdvGImage(File file){
+        this(MovieDataTransfer.getAsMat(file));
+    }
+
     public AdvGImage(Mat mat){
         this(mat,getAsFrame(mat));
     }

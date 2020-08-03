@@ -1,10 +1,9 @@
 package com.ndsl.sddh.movie;
 
-import com.ndsl.graphics.display.drawable.mov.GMovie;
-
 import java.io.File;
+import java.nio.file.FileAlreadyExistsException;
 
 public abstract class MovieEncoder {
-    public abstract File Encode(GMovie movie,EncodeSettings settings);
+    public abstract File Encode(AdvGMovie movie,EncodeSettings settings) throws Exception;
     public abstract boolean isReady();
 }

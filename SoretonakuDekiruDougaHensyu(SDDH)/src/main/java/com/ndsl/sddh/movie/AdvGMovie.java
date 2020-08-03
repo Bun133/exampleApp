@@ -7,14 +7,19 @@ import org.bytedeco.javacv.FrameGrabber;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class AdvGMovie {
-    public AdvGImage[] images;
-    public AdvGMovie(AdvGImage[] data) {
-        this.images=data;
+    public List<MovieFrame> frames;
+    public AdvGMovie(MovieFrame[] frames) {
+        this.frames = Arrays.asList(frames);
+    }
+
+    public AdvGMovie(List<MovieFrame> images){
+        this.frames=images;
     }
 
     public static AdvGMovie build(File file) throws FrameGrabber.Exception {
@@ -33,6 +38,7 @@ public class AdvGMovie {
         return new AdvGMovie(frameList.stream().
                 filter(Objects::nonNull)
                 .map(AdvGImage::new)
-                .toArray(AdvGImage[]::new));
+                .map(MovieFrame::new)
+                .toArray(MovieFrame[]::new));
     }
 }

@@ -7,7 +7,6 @@ import org.bytedeco.javacv.Frame;
 import org.bytedeco.opencv.opencv_core.Mat;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +17,10 @@ public class MovieFrame {
     public AdvGImage base_image;
     public List<MovieEditor<Mat>> mat_editors = new ArrayList<MovieEditor<Mat>>();
     public List<MovieEditor<Frame>> frame_editors = new ArrayList<MovieEditor<Frame>>();
+
+    public MovieFrame(AdvGImage img){
+        this.base_image=img;
+    }
 
     public File export(String path) throws Exception {
         return export(new File(path));
@@ -39,7 +42,7 @@ public class MovieFrame {
         return file;
     }
 
-    public AdvGImage export() throws Exception {
+    public AdvGImage export() {
         DataSupplier<Frame> frame = base_image.getFrame();
         DataSupplier<Mat> mat = base_image.getMat();
         for(MovieEditor<Frame> editor:frame_editors){
