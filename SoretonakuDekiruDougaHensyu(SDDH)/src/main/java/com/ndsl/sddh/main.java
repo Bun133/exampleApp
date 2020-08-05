@@ -1,17 +1,16 @@
 package com.ndsl.sddh;
 
+import com.ndsl.graphics.display.Display;
 import com.ndsl.graphics.display.drawable.base.Drawable;
 import com.ndsl.graphics.display.drawable.img.GImage;
 import com.ndsl.graphics.display.drawable.non_sync.ImageDrawable;
 import com.ndsl.graphics.display.sub.SubWindow;
 import com.ndsl.graphics.pos.Rect;
 import com.ndsl.sddh.image.AdvGImage;
-import com.ndsl.sddh.movie.AdvGMovie;
-import com.ndsl.sddh.movie.DefaultMovieEncoder;
-import com.ndsl.sddh.movie.EncodeSettings;
-import com.ndsl.sddh.movie.MovieFrame;
+import com.ndsl.sddh.movie.*;
 import com.ndsl.sddh.util.SectionManager;
 import com.ndsl.sddh.window.LoadingWindow;
+import org.bytedeco.javacv.FrameGrabber;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -22,12 +21,12 @@ import java.util.List;
 
 public class main {
     public static void main(String[] args) throws Exception {
-        new main().loading();
+        new main().movieInputTest();
     }
 
     public void encodeTest() throws Exception {
         File file=new File("src\\main\\resources\\bun.jpg");
-        AdvGMovie movie=new AdvGMovie(genMovie(600,file));
+        AdvGMovie movie=new AdvGMovie(genMovie(60,file));
         File output=new File("src\\main\\resources\\output.avi");
         System.out.println("Encode Start");
         DefaultMovieEncoder.INSTANCE.Encode(movie,new EncodeSettings.Properties().setExportFile(output).build());
@@ -69,6 +68,30 @@ public class main {
         GImage loading_image=GImage.get(new File("src\\main\\resources\\loading.png"));
         loading_image.zoom(0.5d);
         loadWindow.addDrawable(new Drawable(new ImageDrawable(loading_image.export(),"load_image")));
-        loadWindow.update();
+        long frame_count=0;
+        while(true) {
+            if (loadWindow.limiter.onUpdate()) loadWindow.update();
+            frame_count++;
+        }
+    }
+
+    public void movieInputTest() throws FrameGrabber.Exception {
+        Display display = new Display("NDSL/IR",3,new Rect(0,0,1920/2,1080/2).shift(1920/2,1080/2).shift(-1920/4,-1080/4));
+        display.setMaxFPS(30);
+        System.out.println("Loading....");
+//        AdvGMovie movie=AdvGMovie.build(new File("src\\main\\resources\\test_2.mp4"));
+        System.out.println("Player Building...");
+        NonCachedMoviePlayer player=new NonCachedMoviePlayer("player_id","src\\main\\resources\\test_2.mp4");
+//        MoviePlayer player = new MoviePlayer("player",movie);
+        System.out.println("Player Built");
+        display.addDrawable(new Drawable(player));
+        System.out.println("Playing....");
+        while(true){
+            if(display.limiter.onUpdate()) display.update();
+        }
+    }
+
+    public void cacheTest(){
+
     }
 }

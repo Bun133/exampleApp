@@ -1,17 +1,13 @@
 package com.ndsl.sddh.image;
 
-import com.ndsl.graphics.display.drawable.img.GImage;
 import com.ndsl.sddh.movie.MovieDataTransfer;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.opencv.opencv_core.Mat;
 
-import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.util.function.Supplier;
 
-import static com.ndsl.sddh.movie.MovieDataTransfer.getAsFrame;
-import static com.ndsl.sddh.movie.MovieDataTransfer.getAsMat;
+import static com.ndsl.sddh.movie.MovieDataTransfer.*;
 
 public class AdvGImage {
     public AdvGImage(String path){
@@ -31,15 +27,21 @@ public class AdvGImage {
     }
 
     public AdvGImage(Mat mat,Frame frame){
+        this(mat,frame, getAsImage(frame));
+    }
+
+    public AdvGImage(Mat mat,Frame frame,BufferedImage image){
         this.image_mat=mat;
         this.image_frame=frame;
+        this.bufferedImage=image;
     }
 
     protected Mat image_mat;
     protected Frame image_frame;
+    protected BufferedImage bufferedImage;
     protected DataSupplier<Mat> matDataSupplier;
     protected DataSupplier<Frame> frameDataSupplier;
-
+    protected DataSupplier<BufferedImage> bufferedImageDataSupplier;
     /**
      * <p>if you changed mat,You have to mark Dirty!</p>
      * @return Mat Supplier
@@ -67,10 +69,22 @@ public class AdvGImage {
     }
 
     /**
+     * @return Image that this frame
+     */
+    public DataSupplier<BufferedImage> getImage(){
+        return bufferedImageDataSupplier==null?genImage():bufferedImageDataSupplier;
+    }
+
+    private DataSupplier<BufferedImage> genImage() {
+        this.bufferedImageDataSupplier=new DataSupplier<BufferedImage>(bufferedImage);
+        return bufferedImageDataSupplier;
+    }
+
+    /**
      * @return if frame or mat is dirty
      */
     public boolean isDirty(){
-        return frameDataSupplier.isNeedClean()||matDataSupplier.isNeedClean();
+        return frameDataSupplier.isNeedClean()||matDataSupplier.isNeedClean()||bufferedImageDataSupplier.isNeedClean();
     }
 
     /**
@@ -80,16 +94,28 @@ public class AdvGImage {
      */
     public void clean(){
         if(!isDirty()) return;
-        if(frameDataSupplier.isNeedClean()&&matDataSupplier.isNeedClean()){
+        if(isReject(frameDataSupplier.isNeedClean(),matDataSupplier.isNeedClean(),bufferedImageDataSupplier.isNeedClean())){
             throw new IllegalStateException("Editing Data Rejecting");
         }else{
             if(frameDataSupplier.isNeedClean()){
                 frameDataSupplier.clean();
                 matDataSupplier.setData(getAsMat(frameDataSupplier.get()));
-            }else{
+                bufferedImageDataSupplier.setData(getAsImage(frameDataSupplier.get()));
+            }else if(matDataSupplier.isNeedClean()){
                 matDataSupplier.clean();
                 frameDataSupplier.setData(getAsFrame(matDataSupplier.get()));
+                bufferedImageDataSupplier.setData(getAsImage(matDataSupplier.get()));
+            }else{
+                bufferedImageDataSupplier.clean();
+                matDataSupplier.setData(getAsMat(bufferedImageDataSupplier.get()));
+                frameDataSupplier.setData(getAsFrame(bufferedImageDataSupplier.get()));
             }
         }
+    }
+
+    private boolean isReject(boolean b1,boolean b2,boolean b3){
+        if(b1) return b2||b3;
+        if(b2) return b3;
+        return false;
     }
 }
